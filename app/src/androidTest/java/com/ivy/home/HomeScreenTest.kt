@@ -4,6 +4,8 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import com.ivy.common.androidtest.IvyAndroidTest
 import com.ivy.common.androidtest.test_data.saveAccountWithTransactions
 import com.ivy.common.androidtest.test_data.transactionWithTime
+import com.ivy.core.persistence.entity.trn.data.TrnTimeType
+import com.ivy.data.transaction.TransactionType
 import com.ivy.navigation.Navigator
 import com.ivy.wallet.ui.RootActivity
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -52,5 +54,29 @@ class HomeScreenTest: IvyAndroidTest() {
             .assertTransactionDoesNotExist("Transaction1")
             .assertTransactionIsDisplayed("Transaction2")
             .assertTransactionIsDisplayed("Transaction3")
+    }
+
+    @Test
+    fun testGetOverdueTransaction_turnsIntoNormalTransaction() = runBlocking<Unit> {
+        val date = LocalDate.of(2025, 2, 25)
+        setDate(date)
+
+        val transactionOverdue = transactionWithTime(Instant.parse("2025-02-24T09:00:00Z")).copy(
+            title = "Transaction Overdue",
+            type = TransactionType.Income,
+            timeType = TrnTimeType.Due,
+        )
+
+        db.saveAccountWithTransactions(
+            transactions = listOf(transactionOverdue)
+        )
+
+        HomeScreenRobot(composeRule)
+            .navigateTo(navigator)
+            .clickOverdue()
+            .clickGet()
+            .assertTransactionIsDisplayed("Transaction Overdue")
+            .assertBalanceIsDisplayed(transactionOverdue.amount, transactionOverdue.currency)
+
     }
 }

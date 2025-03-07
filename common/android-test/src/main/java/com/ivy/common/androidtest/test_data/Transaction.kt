@@ -18,7 +18,7 @@ fun transactionEntity(): TransactionEntity {
         amount = 50.0,
         currency = "EUR",
         time = Instant.now(),
-        timeType = TrnTimeType.Due,
+        timeType = TrnTimeType.Actual,
         title = "Test transaction",
         description = "Test description",
         categoryId = null,
